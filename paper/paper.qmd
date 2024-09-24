@@ -23,12 +23,13 @@ library(palmerpenguins)
 
 # Introduction
 
-Public infrastructure, including schools, libraries, healthcare centers, and government offices, forms the backbone of urban services in any modern city. As Toronto continues to expand, managing electricity usage in public buildings becomes increasingly critical. Energy efficiency in public facilities not only reduces operational costs but also contributes to environmental goals, such as carbon reduction and climate change mitigation \cite{droege2018urban}.
+Public infrastructure, including schools, libraries, healthcare centers, and government offices, forms the backbone of urban services in any modern city. As Toronto continues to expand, managing electricity usage in public buildings becomes increasingly critical. Energy efficiency in public facilities not only reduces operational costs but also contributes to environmental goals, such as carbon reduction and climate change mitigation[@droege2018urban].
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+One of the primary determinants of electricity consumption is building size, commonly measured as Gross Floor Area (GFA). Larger buildings tend to consume more energy for lighting, heating, cooling, and equipment operations, but this relationship is influenced by other factors such as building type, operational hours, and energy management systems [@hong2019occupant]. As such, it is crucial for policymakers to understand how building size and other factors influence electricity consumption in Toronto’s public facilities [@li2011managing].
 
-The remainder of this paper is structured as follows. @sec-data....
+Several studies have shown that energy efficiency measures in public buildings can lead to significant reductions in electricity consumption. For example, retrofitting large government buildings or healthcare facilities with modern energy management systems can reduce energy use, while smaller buildings like libraries and schools often exhibit lower per-square-meter energy consumption [@eto2012impact; @santamouris2016innovative].
 
+This paper explores the relationship between Property GFA (m²) and electricity usage (kWh) in over 500 public facilities in Toronto. The study aims to identify patterns in electricity consumption and provide insights for optimizing energy use in Toronto's public sector.
 
 
 # Data {#sec-data}
@@ -36,8 +37,8 @@ The remainder of this paper is structured as follows. @sec-data....
 Some of our data is of penguins (@fig-bills), from @palmerpenguins.
 
 ```{r}
-#| label: fig-bills
-#| fig-cap: Bills of penguins
+#| label: fig-Area
+#| fig-cap: Density Plot for Property Area in Toronto
 #| echo: false
 
 ggplot(penguins, aes(x = island, fill = species)) +
@@ -53,25 +54,26 @@ Talk more about it.
 
 And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
 
-```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
-#| echo: false
-#| warning: false
-#| message: false
-
-analysis_data <- read_csv(here::here("data/analysis_data/analysis_data.csv"))
-
-analysis_data |> 
-  ggplot(aes(x = width, y = length)) +
-  geom_point(alpha = 0.8) +
-  theme_minimal() +
-  labs(x = "Wing width (mm)",
-       y = "Wing length (mm)")
-```
 
 Talk way more about it. 
 
+```{r}
+#| label: none
+#| fig-cap: Relationship between wing length and width
+#| echo: false
+#| message: false
+#| warning: false
+
+
+analysis_data <- read.csv("/Users/liuzilin/Desktop/Toronto_annual_energy_consumption/data/analysis_data/analysis_data.csv")
+
+
+analysis_data |>
+  ggplot(aes(x=log_Area)) +
+  geom_histogram(aes(y= ..density..,fill = "pink")) +
+  geom_density() +
+  ggtitle("Density Plot for Property Area in Toronto")
+```
 
 
 # Model
@@ -113,10 +115,6 @@ Our results are summarized in @tbl-modelresults.
 #| warning: false
 #| message: false
 
-library(rstanarm)
-
-first_model <-
-  readRDS(file = here::here("models/first_model.rds"))
 ```
 
 ```{r}
@@ -126,13 +124,8 @@ first_model <-
 #| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
 #| warning: false
 
-modelsummary::modelsummary(
-  list(
-    "First model" = first_model
-  ),
-  statistic = "mad",
-  fmt = 2
-)
+
+
 ```
 
 
@@ -179,15 +172,7 @@ In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. Th
 #| fig-cap: "Examining how the model fits, and is affected by, the data"
 #| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
 
-pp_check(first_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
 
-posterior_vs_prior(first_model) +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom") +
-  coord_flip()
 ```
 
 ## Diagnostics
@@ -206,9 +191,7 @@ posterior_vs_prior(first_model) +
 #| fig-subcap: ["Trace plot", "Rhat plot"]
 #| layout-ncol: 2
 
-plot(first_model, "trace")
 
-plot(first_model, "rhat")
 ```
 
 
