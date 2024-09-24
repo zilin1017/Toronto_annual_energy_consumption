@@ -1,13 +1,11 @@
 ---
-title: "Tornto annual energy consumption"
-subtitle: "My subtitle if needed"
+title: "Electricity Usage in Toronto’s Public Facilities: Analyzing the Impact of Building Size on Energy Consumption"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Irene Liu
+thanks: "Code and data are available at: https://github.com/zilin1017/Toronto_annual_energy_consumption.git."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This study examines the relationship between building size(GFA) and electricity consumption in Toronto's public facilities. Data from over 500 buildings, including schools,libraries, and hospitals, show a consistent positive correlation between GFA and eletricity usage. Larger facilities, particularly healthcare centers, demonstrate higher energy consumption per square meter. These results help inform efforts to improve energy management in Toronto’s public buildings."
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -217,5 +215,7 @@ plot(first_model, "rhat")
 
 
 # References
+
+
 
 
