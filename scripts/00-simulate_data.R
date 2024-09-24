@@ -12,7 +12,7 @@ library(tidyverse)
 # [...UPDATE THIS...]
 
 #### Simulate data ####
-my_data <- readxl::read_excel("data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5) # 记得改
+my_data <- readxl::read_excel("data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5)
 my_data <- my_data|>
   dplyr::select(c(`Portfolio Manager Property ID`, `Property GFA - Self-Reported (m²)`, `Electricity Use - Grid Purchase (kWh)`)) |>
   dplyr::mutate(ID = `Portfolio Manager Property ID`,
