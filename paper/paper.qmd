@@ -23,6 +23,8 @@ library(palmerpenguins)
 
 # Introduction
 
+Public infrastructure, including schools, libraries, healthcare centers, and government offices, forms the backbone of urban services in any modern city. As Toronto continues to expand, managing electricity usage in public buildings becomes increasingly critical. Energy efficiency in public facilities not only reduces operational costs but also contributes to environmental goals, such as carbon reduction and climate change mitigation \cite{droege2018urban}.
+
 You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
 
 The remainder of this paper is structured as follows. @sec-data....
