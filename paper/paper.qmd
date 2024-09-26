@@ -16,6 +16,8 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+#install.packages("opendatatoronto")
+#install.packages("tidyverse")
 library(tidyverse)
 library(palmerpenguins)
 ```
@@ -25,9 +27,9 @@ library(palmerpenguins)
 
 Public infrastructure, including schools, libraries, healthcare centers, and government offices, forms the backbone of urban services in any modern city. As Toronto continues to expand, managing electricity usage in public buildings becomes increasingly critical. Energy efficiency in public facilities not only reduces operational costs but also contributes to environmental goals, such as carbon reduction and climate change mitigation[@droege2018urban].
 
-One of the primary determinants of electricity consumption is building size, commonly measured as Gross Floor Area (GFA). Larger buildings tend to consume more energy for lighting, heating, cooling, and equipment operations, but this relationship is influenced by other factors such as building type, operational hours, and energy management systems [@hong2019occupant]. As such, it is crucial for policymakers to understand how building size and other factors influence electricity consumption in Toronto’s public facilities [@li2011managing].
+One of the primary determinants of electricity consumption is building size, commonly measured as Gross Floor Area (GFA). Larger buildings tend to consume more energy for lighting, heating, cooling, and equipment operations, but this relationship is influenced by other factors such as building type, operational hours, and energy management systems [@hong2016occupant]. As such, it is crucial for policymakers to understand how building size and other factors influence electricity consumption in Toronto’s public facilities [@li2009managing].
 
-Several studies have shown that energy efficiency measures in public buildings can lead to significant reductions in electricity consumption. For example, retrofitting large government buildings or healthcare facilities with modern energy management systems can reduce energy use, while smaller buildings like libraries and schools often exhibit lower per-square-meter energy consumption [@eto2012impact; @santamouris2016innovative].
+Several studies have shown that energy efficiency measures in public buildings can lead to significant reductions in electricity consumption. For example, retrofitting large government buildings or healthcare facilities with modern energy management systems can reduce energy use, while smaller buildings like libraries and schools often exhibit lower per-square-meter energy consumption [@scott2008impact].
 
 This paper explores the relationship between Property GFA (m²) and electricity usage (kWh) in over 500 public facilities in Toronto. The study aims to identify patterns in electricity consumption and provide insights for optimizing energy use in Toronto's public sector.
 
@@ -48,6 +50,69 @@ ggplot(penguins, aes(x = island, fill = species)) +
   theme_minimal() +
   facet_wrap(~species, ncol = 1) +
   coord_flip()
+
+# Load necessary libraries
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+
+# Relative path, assuming the project root directory is the current working directory
+annual_energy_consumption_data_2021 <- readxl::read_excel("~/Desktop/Toronto_annual_energy_consumption/data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5)
+
+# Select and mutate columns, assigning the result back to the original data
+annual_energy_consumption_data_2021 <- annual_energy_consumption_data_2021 |>
+  dplyr::select(`Property GFA - Self-Reported (m²)`, `Electricity Use - Grid Purchase (kWh)`,  `City`) |>
+  dplyr::mutate(Area = `Property GFA - Self-Reported (m²)`,
+                kWh = `Electricity Use - Grid Purchase (kWh)`,
+                City = `City`)  # Ensure City is the correct column name without quotes
+
+
+# 基于数据的分面调整，并移除不必要的元素
+annual_energy_consumption_data_2021 %>%
+  ggplot(aes(x = Area, y = kWh, color = City)) +
+  geom_point(alpha = 0.5) + # 设置透明度以减少重叠的影响
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ City, scales = "free") + # 允许每个分面自由缩放，以适应各自的范围
+  ggtitle("Electricity Usage vs Building Size by Facility Type") +
+  xlab("Building Size (GFA in m²)") +
+  ylab("Electricity Usage (kWh)") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),  # 去掉y轴的数字
+    axis.ticks.y = element_blank(),  # 去掉y轴的刻度
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# Load necessary libraries
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+# Read the data from Excel
+annual_energy_consumption_data_2021 <- readxl::read_excel("~/Desktop/Toronto_annual_energy_consumption/data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5)
+
+# Reclassify 'Other' types into a single 'Other' category
+annual_energy_consumption_data_2021 <- annual_energy_consumption_data_2021 %>%
+  mutate(Property_Type = case_when(
+    grepl("Other", `Primary Property Type - Self Selected`) ~ "Other",
+    TRUE ~ `Primary Property Type - Self Selected`
+  ))
+
+# Plotting the data
+ggplot(annual_energy_consumption_data_2021, aes(x = `Property GFA - Self-Reported (m²)`, y = `Electricity Use - Grid Purchase (kWh)`, color = Property_Type)) +
+  geom_point(alpha = 0.5) + # Set transparency to avoid overlapping
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ Property_Type, scales = "free") + # Facet based on Property_Type
+  ggtitle("Electricity Usage vs Building Size by Facility Type") +
+  xlab("Building Size (GFA in m²)") +
+  ylab("Electricity Usage (kWh)") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(), # Remove y-axis numbers
+    axis.ticks.y = element_blank(), # Remove y-axis ticks
+    axis.text.x = element_text(angle = 45, hjust = 1) # Rotate x-axis text
+  )
+
 ```
 
 Talk more about it.
@@ -64,6 +129,7 @@ Talk way more about it.
 #| message: false
 #| warning: false
 
+library(ggplot2)
 
 analysis_data <- read.csv("/Users/liuzilin/Desktop/Toronto_annual_energy_consumption/data/analysis_data/analysis_data.csv")
 
@@ -73,8 +139,34 @@ analysis_data |>
   geom_histogram(aes(y= ..density..,fill = "pink")) +
   geom_density() +
   ggtitle("Density Plot for Property Area in Toronto")
+  
 ```
 
+
+```{r}
+#| label: second
+#| fig-cap: Relationship between ...
+#| echo: false
+#| message: false
+#| warning: false
+
+
+
+# Filter out zero or negative values (if needed)
+
+analysis_data <- analysis_data |> 
+  dplyr::filter(kWh > 0)
+
+# Plot the histogram and density
+analysis_data |>
+  ggplot(aes(x = kWh)) +
+  geom_histogram(aes(y = ..density..), fill = "orange", binwidth = 250000) +  # Adjust bin width
+  geom_density() +
+  ggtitle("Density Plot for Electricity Use in Toronto") +
+  theme_minimal()
+
+
+```
 
 # Model
 
