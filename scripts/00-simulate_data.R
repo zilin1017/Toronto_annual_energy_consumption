@@ -22,7 +22,7 @@ my_data <- my_data|>
   dplyr::filter(Area < 2500 & Area > 30) |>
   dplyr::mutate(log_Area = log(Area))
 
-write.csv(my_data, "data/analysis_data/simulated_analysis_data.csv")
+write.csv(my_data, "data/analysis_data/analysis_data.csv")
 
 
 
