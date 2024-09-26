@@ -51,6 +51,7 @@ ggplot(penguins, aes(x = island, fill = species)) +
   facet_wrap(~species, ncol = 1) +
   coord_flip()
 
+### graph1 ##
 # Load necessary libraries
 library(readxl)
 library(ggplot2)
@@ -73,7 +74,7 @@ annual_energy_consumption_data_2021 %>%
   geom_point(alpha = 0.5) + # 设置透明度以减少重叠的影响
   geom_smooth(method = "lm", se = FALSE) +
   facet_wrap(~ City, scales = "free") + # 允许每个分面自由缩放，以适应各自的范围
-  ggtitle("Electricity Usage vs Building Size by Facility Type") +
+  ggtitle("Electricity Usage vs Building Size by City") +
   xlab("Building Size (GFA in m²)") +
   ylab("Electricity Usage (kWh)") +
   theme_minimal() +
@@ -83,6 +84,9 @@ annual_energy_consumption_data_2021 %>%
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
+
+
+###2##
 # Load necessary libraries
 library(readxl)
 library(ggplot2)
@@ -112,6 +116,24 @@ ggplot(annual_energy_consumption_data_2021, aes(x = `Property GFA - Self-Reporte
     axis.ticks.y = element_blank(), # Remove y-axis ticks
     axis.text.x = element_text(angle = 45, hjust = 1) # Rotate x-axis text
   )
+
+
+##graph3##
+
+# 使用柱状图展示不同建筑类型的总用电量
+ggplot(annual_energy_consumption_data_2021, aes(x = Property_Type, y = `Electricity Use - Grid Purchase (kWh)`, fill = Property_Type)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Total Electricity Usage by Property Type") +
+  xlab("Property Type") +
+  ylab("Total Electricity Usage (kWh)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 45), size = 10),
+    axis.text.y = element_blank(), # Remove y-axis numbers
+    axis.ticks.y = element_blank(), # Remove y-axis ticks
+    axis.text.x = element_text(angle = 65, hjust = 1, size=6),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 5))
 
 ```
 
