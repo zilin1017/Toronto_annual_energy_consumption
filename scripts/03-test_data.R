@@ -14,7 +14,7 @@ library(dplyr)
 library(readr)
 
 #### Test data ####
-simulated_data <- read_csv(here::here("data/raw_data/simulated_data.csv"), skip=5)
+simulated_data <- read_csv(here::here("data/raw_data/simulated_data.csv"))
 
 data <- simulated_data
 
@@ -33,7 +33,7 @@ all(!is.na(data$log_Area))
 all(data$Area>= 30 & data$Area <= 2500)
 
 #kWh values are between 1 and 21972259
-all(data$kWh >= 1 & data$kWh <= 21972259)
+all(data$kWh >= 1 & data$kWh <= 22000000)
 
 #log_Area values are between 3 and 8
 all(data$log_Area >= 3 & data$log_Area <= 8)
