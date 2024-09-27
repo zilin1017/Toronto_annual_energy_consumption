@@ -7,6 +7,7 @@ date: today
 date-format: long
 abstract: "This study examines the relationship between building size(m²) and electricity consumption(kWh) in Toronto's public facilities. Data from over 500 buildings, including schools,libraries, and hospitals, show a consistent positive correlation between GFA and eletricity usage. Larger facilities, particularly healthcare centers, demonstrate higher energy consumption per square meter. These results help inform efforts to improve energy management in Toronto’s public buildings."
 format: pdf
+toc: true
 number-sections: true
 bibliography: references.bib
 ---
@@ -16,10 +17,18 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
-#install.packages("opendatatoronto")
-#install.packages("tidyverse")
+##install the packages
+##install.packages("opendatatoronto")
+##install.packages("tidyverse")
+##install.packages("knitr")
+
 library(tidyverse)
-library(palmerpenguins)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+
 ```
 
 
@@ -36,102 +45,92 @@ This paper explores the relationship between Property GFA (m²) and electricity 
 
 # Data {#sec-data}
 
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
+## Raw data
+The data used in this paper came from the OpenData Toronto portal through the library [@opendt]. Data were cleaned and analyzed using the open source statistical programming language R [@citeR]. The particular data set used to analyze the Consumption of Energy is the Annual Energy Consumption Data in 2021 [@2021datatoronto]. The following packages helped with the data analysis: tidyverse [@tidyverse], here [@here]), dplyr [@dplyr] and ggplot2 [@ggplot] was use for making graphics. All data analysis was conducted using R [@citeR].
+
+The data used in this analysis comes from the City of Toronto's Open Data Portal[@opendt], specifically focusing on energy consumption across various property types in Toronto for the year 2021[@2021datatoronto]. The dataset consists of 1,802 unique entries, each representing a specific property in various regions of Toronto. For each property, the data captures critical metrics such as the building size, self-reported in gross floor area (GFA) in square meters (m²), and the total electricity consumption, measured in kilowatt-hours (kWh), purchased from the grid. No personal or property-specific information is included. The data was last updated on July 4, 2023, and helps understand energy usage trends across different building types in Toronto.
+
+## Cleaned Data
+
+The cleaning process focused on removing irrelevant or incomplete data to ensure the dataset was suitable for analyzing electricity consumption patterns in Toronto's public sector. Missing values(NA) were removed during the data cleaning process, particularly those related to electricity usage. And buildings that did not meet the size criteria (less than 30 square meters or greater than 2,500 square meters) were also filtered out.Additionally, variables irrelevant to the study’s focus were also omitted. Furthermore, the cleaned data retains only the key variables required for the analysis: property type, electricity use, floor area, and log-transformed area. This ensures that the final dataset is both accurate and relevant for understanding electricity consumption trends across different public facilities in Toronto.
+
+A sample of the cleaned data can be seen in @tbl-1. The cleaned analysis dataset is loaded using the R programming language [@citeR]. The folder structure for this analysis is also inherited from Professor Rohan Alexander [@rohan]. Figures and tables are then generated using the knitr [@knitr] and tidyverse [@tidyverse] packages.
+
+```{r}
+#| label: tbl-1
+#| tbl-cap: Sample of cleaned data
+#| echo: false
+
+analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
+
+analysis_data_subset <- analysis_data[ c("Property_Type", "kWh", "Area", "log_Area")]
+
+filtered_data <- analysis_data_subset|>
+  filter(!is.na(kWh) & kWh != "NA") |>   
+  distinct(Property_Type, .keep_all = TRUE) 
+
+kable(
+  head(filtered_data, 6), 
+  col.names = c("Property Type", "Electricity Use (kWh)", "Area (m²)", "Log of Area (m²)"),
+  align = c("l", "c", "c", "c","c")
+)
+
+```
+
+## Data Analysis
 
 ```{r}
 #| label: fig-Area
 #| fig-cap: Density Plot for Property Area in Toronto
 #| echo: false
+#| message: false
+#| warning: false
 
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = "none") +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
 
-### graph1 ##
-# Load necessary libraries
-library(readxl)
-library(ggplot2)
-library(tidyverse)
+raw_data <- read_csv(here::here("data/raw_data/raw_data.csv"), skip=5)
+analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
 
-# Relative path, assuming the project root directory is the current working directory
-annual_energy_consumption_data_2021 <- readxl::read_excel("~/Desktop/Toronto_annual_energy_consumption/data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5)
-
-# Select and mutate columns, assigning the result back to the original data
-annual_energy_consumption_data_2021 <- annual_energy_consumption_data_2021 |>
-  dplyr::select(`Property GFA - Self-Reported (m²)`, `Electricity Use - Grid Purchase (kWh)`,  `City`) |>
+annual_energy_consumption_data_2021 <- raw_data |>
+  dplyr::select(`Property GFA - Self-Reported (m²)`, `Electricity Use - Grid Purchase (kWh)`,  `City`)|>
   dplyr::mutate(Area = `Property GFA - Self-Reported (m²)`,
                 kWh = `Electricity Use - Grid Purchase (kWh)`,
-                City = `City`)  # Ensure City is the correct column name without quotes
+                City = `City`) 
 
 
-# 基于数据的分面调整，并移除不必要的元素
 annual_energy_consumption_data_2021 %>%
   ggplot(aes(x = Area, y = kWh, color = City)) +
-  geom_point(alpha = 0.5) + # 设置透明度以减少重叠的影响
+  geom_point(alpha = 0.5) + 
   geom_smooth(method = "lm", se = FALSE) +
-  facet_wrap(~ City, scales = "free") + # 允许每个分面自由缩放，以适应各自的范围
+  facet_wrap(~ City, scales = "free") + 
   ggtitle("Electricity Usage vs Building Size by City") +
   xlab("Building Size (GFA in m²)") +
   ylab("Electricity Usage (kWh)") +
   theme_minimal() +
   theme(
-    axis.text.y = element_blank(),  # 去掉y轴的数字
-    axis.ticks.y = element_blank(),  # 去掉y轴的刻度
-    axis.text.x = element_text(angle = 45, hjust = 1)
+    axis.ticks.y = element_blank(),  
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, size=4.5),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
   )
 
+```
 
 
-###2##
-# Load necessary libraries
-library(readxl)
-library(ggplot2)
-library(dplyr)
+```{r}
+#| label: fig-Property
+#| fig-cap: Percentage Electricity Usage by Properties 
+#| echo: false
+#| message: false
+#| warning: false
 
-# Read the data from Excel
-annual_energy_consumption_data_2021 <- readxl::read_excel("~/Desktop/Toronto_annual_energy_consumption/data/raw_data/annual-energy-consumption-data-2021.xlsx", skip = 5)
+raw_data <- read_csv(here::here("data/raw_data/raw_data.csv"), skip=5)
+analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
 
-# Reclassify 'Other' types into a single 'Other' category
-annual_energy_consumption_data_2021 <- annual_energy_consumption_data_2021 %>%
+analysis_data <- analysis_data |>
   mutate(Property_Type = case_when(
-    grepl("Other", `Primary Property Type - Self Selected`) ~ "Other",
-    TRUE ~ `Primary Property Type - Self Selected`
-  ))
-
-# Plotting the data
-ggplot(annual_energy_consumption_data_2021, aes(x = `Property GFA - Self-Reported (m²)`, y = `Electricity Use - Grid Purchase (kWh)`, color = Property_Type)) +
-  geom_point(alpha = 0.5) + # Set transparency to avoid overlapping
-  geom_smooth(method = "lm", se = FALSE) +
-  facet_wrap(~ Property_Type, scales = "free") + # Facet based on Property_Type
-  ggtitle("Electricity Usage vs Building Size by Facility Type") +
-  xlab("Building Size (GFA in m²)") +
-  ylab("Electricity Usage (kWh)") +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_blank(), # Remove y-axis numbers
-    axis.ticks.y = element_blank(), # Remove y-axis ticks
-    axis.text.x = element_text(angle = 45, hjust = 1) # Rotate x-axis text
-  )
-
-
-##graph3##
-
-library(ggplot2)
-library(dplyr)
-
-analysis_data <- read.csv("data/analysis_data/analysis_data.csv")
-
-# Reclassify 'Other' types into a single 'Other' category
-##analysis_data <- analysis_data %>%
-##  mutate(percentage = kWh / sum(kWh) * 100)
-analysis_data <- analysis_data %>%
-  mutate(Property_Type = case_when(
-    grepl("Other", `Primary Property Type - Self Selected`) ~ "Other",
-    TRUE ~ `Primary Property Type - Self Selected`
+    grepl("Other", `Property_Type`) ~ "Other",
+    TRUE ~ `Property_Type`
   ))
 kWh_count <- analysis_data |>
   group_by(Property_Type)|>
@@ -140,19 +139,21 @@ kWh_count <- analysis_data |>
 
 ggplot(kWh_count, aes(x = Property_Type, y = kWh, fill = Property_Type)) +
   geom_bar(stat = "identity") +
-  geom_text(aes(label = paste0(round(kWh/sum(kWh) *100 , 1), "%")), vjust=-0.5) +
+  geom_text(aes(label = paste0(round(kWh/sum(kWh) *100 , 1), "%")), vjust=0.2, size = 2) +
   ggtitle("Total Electricity Usage by Property Type") +
   xlab("Property Type") +
   ylab("Total Electricity Usage (kWh)") +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5, margin = margin(b = 45), size = 10),
-    axis.text.y = element_blank(), # Remove y-axis numbers
-    axis.ticks.y = element_blank(), # Remove y-axis ticks
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 45), size = 8),
+    axis.text.y = element_blank(), 
+    axis.ticks.y = element_blank(), 
     axis.text.x = element_text(angle = 65, hjust = 1, size=6),
     legend.key.size = unit(0.3, "cm"),
-    legend.text = element_text(size = 5)) 
-
+    legend.text = element_text(size = 5),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    )
 
 ```
 
@@ -170,16 +171,16 @@ Talk way more about it.
 #| message: false
 #| warning: false
 
-library(ggplot2)
-
-analysis_data <- read.csv("/Users/liuzilin/Desktop/Toronto_annual_energy_consumption/data/analysis_data/analysis_data.csv")
-
 
 analysis_data |>
   ggplot(aes(x=log_Area)) +
   geom_histogram(aes(y= ..density..,fill = "pink")) +
   geom_density() +
-  ggtitle("Density Plot for Property Area in Toronto")
+  ggtitle("Density Plot for Property Area in Toronto") +
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    )
   
 ```
 
@@ -192,50 +193,21 @@ analysis_data |>
 #| warning: false
 
 
-
-# Filter out zero or negative values (if needed)
-
 analysis_data <- analysis_data |> 
   dplyr::filter(kWh > 0)
 
-# Plot the histogram and density
 analysis_data |>
   ggplot(aes(x = kWh)) +
-  geom_histogram(aes(y = ..density..), fill = "orange", binwidth = 250000) +  # Adjust bin width
+  geom_histogram(aes(y = ..density..), fill = "orange", binwidth = 250000, alpha = 0.6) +  
   geom_density() +
   ggtitle("Density Plot for Electricity Use in Toronto") +
-  theme_minimal()
-
+  theme_minimal()+
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+    )
 
 ```
-
-# Model
-
-The goal of our modelling strategy is twofold. Firstly,...
-
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
-
-## Model set-up
-
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
-
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
-
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
-
-
-### Model justification
-
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
 
 
 # Results
@@ -254,10 +226,25 @@ Our results are summarized in @tbl-modelresults.
 #| echo: false
 #| eval: true
 #| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
+#| fig-cap: "Regression of Electricity Use on Area"
 #| warning: false
 
+raw_data <- read_csv(here::here("data/raw_data/raw_data.csv"), skip=5)
+analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
 
+library(ggplot2)
+
+
+annual_energy_consumption_data_2021 <- analysis_data %>%
+  mutate(log_Area = log(Area), log_kWh = log(kWh))
+
+ggplot(annual_energy_consumption_data_2021, aes(x = log_Area, y = log_kWh)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  ggtitle("Log-Log Regression of Electricity Use on Area") +
+  xlab("Log of Area (m²)") +
+  ylab("Log of Electricity Use (kWh)") +
+  theme_minimal()
 
 ```
 
