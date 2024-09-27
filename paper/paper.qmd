@@ -120,9 +120,27 @@ ggplot(annual_energy_consumption_data_2021, aes(x = `Property GFA - Self-Reporte
 
 ##graph3##
 
-# 使用柱状图展示不同建筑类型的总用电量
-ggplot(annual_energy_consumption_data_2021, aes(x = Property_Type, y = `Electricity Use - Grid Purchase (kWh)`, fill = Property_Type)) +
+library(ggplot2)
+library(dplyr)
+
+analysis_data <- read.csv("data/analysis_data/analysis_data.csv")
+
+# Reclassify 'Other' types into a single 'Other' category
+##analysis_data <- analysis_data %>%
+##  mutate(percentage = kWh / sum(kWh) * 100)
+analysis_data <- analysis_data %>%
+  mutate(Property_Type = case_when(
+    grepl("Other", `Primary Property Type - Self Selected`) ~ "Other",
+    TRUE ~ `Primary Property Type - Self Selected`
+  ))
+kWh_count <- analysis_data |>
+  group_by(Property_Type)|>
+  summarise(kWh = n()) |>
+  arrange(desc(kWh))
+
+ggplot(kWh_count, aes(x = Property_Type, y = kWh, fill = Property_Type)) +
   geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0(round(kWh/sum(kWh) *100 , 1), "%")), vjust=-0.5) +
   ggtitle("Total Electricity Usage by Property Type") +
   xlab("Property Type") +
   ylab("Total Electricity Usage (kWh)") +
@@ -133,7 +151,8 @@ ggplot(annual_energy_consumption_data_2021, aes(x = Property_Type, y = `Electric
     axis.ticks.y = element_blank(), # Remove y-axis ticks
     axis.text.x = element_text(angle = 65, hjust = 1, size=6),
     legend.key.size = unit(0.3, "cm"),
-    legend.text = element_text(size = 5))
+    legend.text = element_text(size = 5)) 
+
 
 ```
 
