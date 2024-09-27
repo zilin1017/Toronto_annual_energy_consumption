@@ -18,9 +18,9 @@ bibliography: references.bib
 #| message: false
 
 ##install the packages
-##install.packages("opendatatoronto")
-##install.packages("tidyverse")
-##install.packages("knitr")
+# install.packages("opendatatoronto")
+# install.packages("tidyverse")
+# install.packages("knitr")
 
 library(tidyverse)
 library(knitr)
@@ -209,45 +209,39 @@ analysis_data |>
 
 ```
 
-
 # Results
 
-Our results are summarized in @tbl-modelresults.
+Our results are summarized in @fig-modelresults.
 
 ```{r}
+#| label: fig-modelresults
+#| fig-cap: Regression of Electricity Use on Area
 #| echo: false
-#| eval: true
-#| warning: false
 #| message: false
-
-```
-
-```{r}
-#| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| fig-cap: "Regression of Electricity Use on Area"
 #| warning: false
 
-raw_data <- read_csv(here::here("data/raw_data/raw_data.csv"), skip=5)
+
+raw_data <- read.csv(here::here("data/raw_data/raw_data.csv"), skip=5)
 analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
 
+
+library(tidyverse)
+library(knitr)
+library(dplyr)
 library(ggplot2)
+library(readr)
 
-
-annual_energy_consumption_data_2021 <- analysis_data %>%
+annual_energy_consumption_data_2021 <- analysis_data |>
   mutate(log_Area = log(Area), log_kWh = log(kWh))
 
 ggplot(annual_energy_consumption_data_2021, aes(x = log_Area, y = log_kWh)) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, formula = y ~ x, color = "blue") +
   ggtitle("Log-Log Regression of Electricity Use on Area") +
   xlab("Log of Area (m²)") +
   ylab("Log of Electricity Use (kWh)") +
   theme_minimal()
-
 ```
-
 
 
 
