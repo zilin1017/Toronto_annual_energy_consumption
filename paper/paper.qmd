@@ -78,10 +78,11 @@ kable(
 ```
 
 ## Data Analysis
+In  @fig-Area, we observe the density of electricity usage versus building size across different cities in Toronto. Denser clusters of data points in central areas such as Toronto and Scarborough suggest a higher concentration of both building sizes and electricity consumption. Specifically, Toronto shows a dense clustering of buildings in the range of 25,000 to 50,000 m², indicating that larger facilities in central locations tend to consume significantly more electricity compared to those in peripheral cities. In contrast, cities like Maple and York have relatively fewer buildings, and their electricity consumption is more evenly distributed, as indicated by the sparse density of points. This density pattern supports the paper's objective of analyzing how building size influences electricity use and points to central urban areas as having the greatest potential for energy efficiency interventions.
 
 ```{r}
 #| label: fig-Area
-#| fig-cap: Density Plot for Property Area in Toronto
+#| fig-cap: Density Plot for Property Area in Toronto (By City)
 #| echo: false
 #| message: false
 #| warning: false
@@ -107,6 +108,7 @@ annual_energy_consumption_data_2021 %>%
   ylab("Electricity Usage (kWh)") +
   theme_minimal() +
   theme(
+    plot.title = element_text(hjust = 0.5,  size = 10),
     axis.ticks.y = element_blank(),  
     axis.text.y = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 1, size=4.5),
@@ -115,7 +117,6 @@ annual_energy_consumption_data_2021 %>%
   )
 
 ```
-
 
 ```{r}
 #| label: fig-Property
@@ -154,19 +155,11 @@ ggplot(kWh_count, aes(x = Property_Type, y = kWh, fill = Property_Type)) +
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank()
     )
-
 ```
 
-Talk more about it.
-
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
-
-
-Talk way more about it. 
-
 ```{r}
-#| label: none
-#| fig-cap: Relationship between wing length and width
+#| label: fig-log-area
+#| fig-cap: Density Plot of Log_Area
 #| echo: false
 #| message: false
 #| warning: false
@@ -174,7 +167,7 @@ Talk way more about it.
 
 analysis_data |>
   ggplot(aes(x=log_Area)) +
-  geom_histogram(aes(y= ..density..,fill = "pink")) +
+  geom_histogram(aes(y= ..density.., fill = "pink")) +
   geom_density() +
   ggtitle("Density Plot for Property Area in Toronto") +
   theme(
@@ -184,10 +177,9 @@ analysis_data |>
   
 ```
 
-
 ```{r}
-#| label: second
-#| fig-cap: Relationship between ...
+#| label: fig-kWh
+#| fig-cap: Density Plot of kWh
 #| echo: false
 #| message: false
 #| warning: false
@@ -198,7 +190,7 @@ analysis_data <- analysis_data |>
 
 analysis_data |>
   ggplot(aes(x = kWh)) +
-  geom_histogram(aes(y = ..density..), fill = "orange", binwidth = 250000, alpha = 0.6) +  
+  geom_histogram(aes(y = ..density..), fill = "blue", binwidth = 250000, alpha = 0.6) +  
   geom_density() +
   ggtitle("Density Plot for Electricity Use in Toronto") +
   theme_minimal()+
@@ -208,11 +200,15 @@ analysis_data |>
     )
 
 ```
+In @fig-Property, the bar plot illustrates the total electricity usage across various property types. Notably, the Other category dominates with 38.3% of the total electricity consumption, suggesting a wide range of public facilities categorized under this label that may significantly differ in size and function. Other high-consumption categories include Fire Stations (15.8%), Libraries (13.7%), and Social/Meeting Halls (11.3%). These property types account for a substantial portion of electricity use, highlighting their operational demands.
+The distribution of percentages provides a clear distinction between high-demand and low-demand property types. This segmentation supports the paper's objective of identifying the specific categories where energy efficiency efforts may yield the most impact, particularly in facilities that operate intensively throughout the year.
+
+Density Plot for Property Area in Toronto @fig-log-area: it illustrates the distribution of property sizes in logarithmic form, showing that most buildings fall within a moderate size range. However, a smaller number of properties have much larger areas, indicated by the tail on the right side of the plot. This observation illustrates that the larger buildings tend to consume more electricity, but the relationship is not strictly proportional across the full range of building sizes.
+
+The density plot for electricity @fig-kWh use shows a sharp peak in the lower range of electricity consumption, with most facilities consuming less than 5,000,000 kWh annually. This suggests that the majority of public facilities operate with relatively low energy demands. However, the right tail extends toward much higher consumption values, with a few facilities reaching close to 20,000,000 kWh. The skewness of this distribution indicates the presence of outliers—facilities that consume significantly more energy than others. These outliers may represent large, energy-intensive buildings or those with specific operational requirements.
+\newpage
 
 # Results
-
-Our results are summarized in @fig-modelresults.
-
 ```{r}
 #| label: fig-modelresults
 #| fig-cap: Regression of Electricity Use on Area
@@ -225,12 +221,6 @@ raw_data <- read.csv(here::here("data/raw_data/raw_data.csv"), skip=5)
 analysis_data <- read.csv(here::here("data/analysis_data/analysis_data.csv"))
 
 
-library(tidyverse)
-library(knitr)
-library(dplyr)
-library(ggplot2)
-library(readr)
-
 annual_energy_consumption_data_2021 <- analysis_data |>
   mutate(log_Area = log(Area), log_kWh = log(kWh))
 
@@ -241,73 +231,50 @@ ggplot(annual_energy_consumption_data_2021, aes(x = log_Area, y = log_kWh)) +
   xlab("Log of Area (m²)") +
   ylab("Log of Electricity Use (kWh)") +
   theme_minimal()
-```
 
+```
+Our results, summarized in Figure @fig-modelresults, indicate a positive relationship between electricity use (kWh) and building area (m²) in Toronto's public facilities through log-log regression analysis. This finding aligns with previous research that suggests building size is a key determinant of energy consumption in institutional settings. Larger buildings generally consume more electricity, which is consistent with the basic principle of scaling energy demand with floor area.
+
+However, our analysis suggests that building size alone does not fully explain electricity consumption, indicating that factors such as building age, equipment efficiency, and usage patterns likely play significant roles [@Yohanis2008]. For instance, lighting and heating systems have been shown to contribute disproportionately to energy consumption in larger buildings [@PerezLombard2008]. Consequently, strategies to optimize energy usage should focus not just on large facilities but also on mid-sized properties, which may provide better opportunities for improving efficiency without encountering the high consumption rates associated with the largest properties [@Ouf2017].
+
+By targeting mid-sized buildings for energy efficiency improvements, policy-makers can maximize the return on investment in energy-saving measures, as these properties may experience greater relative reductions in consumption [@Santamouris2017]. Future research should explore the role of operational practices and energy management technologies in reducing consumption across different property sizes.
 
 
 # Discussion
+## First discussion point: Urban Density and Its Impact on Electricity Consumption
 
-## First discussion point {#sec-first-point}
+@fig-Area highlights how different regions of Toronto exhibit varied patterns of electricity consumption based on their urban density. Cities like Toronto, North York, and Scarborough show denser clusters of data points compared to less populated areas like Maple and Richmond Hill, where fewer observations are present. This difference in data density could suggest that larger, more densely populated urban areas have a higher concentration of public facilities that consume substantial amounts of electricity, supporting previous research [@Ouf2017]. Additionally, the more scattered and sparse data points in regions such as Pickering and Etobicoke indicate that these cities have fewer facilities or public buildings consuming significant electricity, further emphasizing the urban-rural divide in energy demand.
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+The lack of data points in cities like Maple suggests that the relatively lower number of public buildings could lead to decreased overall electricity usage, which showing that electricity consumption is typically lower in less urbanized areas due to fewer public infrastructures. The data also raises questions about whether the facilities in these regions are less energy-efficient or simply fewer in number, as the lower density could mask potential inefficiencies.
 
-## Second discussion point
+Also, the location of a facility, including its microclimate, can have a substantial impact on energy usage, particularly in cities with diverse weather conditions like Toronto. Buildings in areas with more extreme temperatures (either cold winters or hot summers) require more heating or cooling, which drives up electricity use. This factor is especially relevant for buildings with large window-to-wall ratios or poor insulation, as they tend to lose heat more easily. In addition, the density plots from @fig-Area show that some locations, such as Etobicoke and East York, feature buildings with relatively lower consumption compared to Scarborough or Toronto, indicating that location and local climate could be influencing these trends.
 
-## Third discussion point
+## Second discussion point:Factors Influencing Building Energy Consumption: Property, Functionality, Operational Intensity and Occupancy
 
-## Weaknesses and next steps
+Different types of buildings have varying operational needs, which directly impact their energy consumption. For instance, facilities like fire stations and wastewater treatment plants operate 24/7, often requiring extensive heating, ventilation, and cooling systems. In contrast, libraries or office spaces may have more intermittent usage, leading to lower electricity demand. The diversity of energy requirements across property types is a key factor influencing consumption, as demonstrated in @fig-Property where categories such as "Other" and "Fire Stations" stand out with significantly higher usage. 
 
-Weaknesses and next steps should also be included.
+Buildings with higher occupancy levels or more intense operational schedules tend to consume more energy. Facilities that are open for longer hours or serve a large number of occupants, such as community centers or swimming pools, require more consistent energy to maintain lighting, cooling systems, and equipment. Studies, such as those by [@Yohanis2008], show that buildings with greater occupancy or more energy-intensive activities exhibit higher energy use, even when the building size is relatively modest. In our dataset, "Heated Swimming Pools" and "Social/Meeting Halls" stand out as high-energy users due to their intensive operational demands, despite not being the largest facilities.
+
+
+## Limitations and Next Steps
+
+While our analysis provides valuable insights into electricity consumption across Toronto’s public facilities, there are several limitations that must be addressed. First, the dataset lacks information on occupancy and operational schedules, both of which are key determinants of energy consumption [@Yohanis2008]. Without these variables, it is difficult to draw firm conclusions about why some buildings consume more energy than others, beyond their size and property type. Additionally, as shown in @fig-log-area and @fig-kWh, the skewed distribution of electricity usage—dominated by a few large consumers—poses challenges for generalizing energy-saving strategies across all building types.
+
+To improve the accuracy and usefulness of the analysis, future studies should incorporate temporal data on electricity use, enabling a better understanding of peak demand periods and seasonal variations in energy consumption. Further, the inclusion of occupancy data and the use of more advanced statistical techniques, such as random forest models or decision trees, could help account for the complex interactions between building size, type, and operational characteristics, leading to more actionable policy recommendations [@Santamouris2017].
+
+
 
 \newpage
 
 \appendix
 
 # Appendix {-}
+## Dataset and Graph Sketches {-}
 
+Drafts of the necessary dataset and the figures produced by this analysis are available in the other/sketches file of the GitHub repository.
 
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
-
-```{r}
-#| eval: true
-#| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
-
-
-```
-
-## Diagnostics
-
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
-
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
-
-```{r}
-#| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: fig-stanareyouokay
-#| fig-cap: "Checking the convergence of the MCMC algorithm"
-#| fig-subcap: ["Trace plot", "Rhat plot"]
-#| layout-ncol: 2
-
-
-```
-
+## Attribution Statement {-}
+Contains information licensed under the Open Government Licence– Toronto [@open_toronto_license]
 
 
 \newpage
