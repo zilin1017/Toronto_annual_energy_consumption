@@ -1,4 +1,10 @@
-
+#### Preamble ####
+# Purpose: Downloads and saves the data from  opendatatoronto
+# Author: Irene Liu
+# Date: 26 September 2024
+# Contact: liuzilin.liu@mail.utoronto.ca
+# License: MIT
+# Pre-requisites: Install the opendatatoronto and tidyverse packages.
 
 
 #### Workspace setup ####
